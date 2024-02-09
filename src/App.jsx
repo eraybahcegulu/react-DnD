@@ -3,7 +3,7 @@ import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
 import { useEffect, useState } from 'react';
-import { DeleteOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DragOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquare, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import { faArrowsToDot, faCheck } from '@fortawesome/free-solid-svg-icons';
@@ -181,7 +181,7 @@ const App = () => {
             editingTodoId === record.id
               ?
               <>
-                <Input defaultValue={record.todo} maxLength={40}  style={{ width: 400 }} onChange={handleChange} />
+                <Input defaultValue={record.todo} maxLength={40} style={{ width: 400 }} onChange={handleChange} />
                 <FontAwesomeIcon className='cursor-pointer text-xl' icon={faCheck} shake onClick={() => handleEdit(record.id, editedNewTodo)} />
               </>
               :
@@ -213,6 +213,15 @@ const App = () => {
           }
 
           <DeleteOutlined className='cursor-pointer text-xl text-red-600' onClick={() => handleDelete(record.id)} />
+        </div>
+      ),
+    },
+
+    {
+      title: 'Drag Drop',
+      render: () => (
+        <div className='flex flex-row  w-auto items-center justify-center'>
+          <DragOutlined className='text-xl text-blue-600 cursor-grabbing'/>
         </div>
       ),
     },
