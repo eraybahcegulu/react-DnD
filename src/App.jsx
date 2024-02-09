@@ -3,15 +3,17 @@ import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
 import { useEffect, useState } from 'react';
-import { LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquare, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
-import { faArrowsToDot } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsToDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingTodoId, setEditingTodoId] = useState(null);
   const [addTodoForm] = Form.useForm();
+  const [editedNewTodo, setEditedNewTodo] = useState(null);
 
   useEffect(() => {
     setTimeout(() => {
@@ -84,6 +86,38 @@ const App = () => {
     localStorage.setItem('todos', JSON.stringify(updatedTodos));
   };
 
+  const handleStartEdit = async (id) => {
+    setEditingTodoId(id);
+  };
+
+  const handleEdit = (id, editedNewTodo) => {
+    if (editedNewTodo) {
+      const updatedTodos = todos.map(todo => {
+        if (todo.id === id) {
+          return { ...todo, todo: editedNewTodo };
+        }
+        return todo;
+      });
+      setTodos(updatedTodos);
+      localStorage.setItem('todos', JSON.stringify(updatedTodos));
+    }
+    setEditingTodoId(null);
+  };
+
+  const handleDelete = async (id) => {
+    const updatedTodos = todos.filter(todo => todo.id !== id);
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
+    setTodos(updatedTodos);
+
+    if (id === editingTodoId) {
+      setEditingTodoId(null);
+    }
+  };
+
+  const handleChange = (event) => {
+    setEditedNewTodo(event.target.value);
+  };
+
   const columns = [
     {
       render: (_, record) => (
@@ -115,7 +149,6 @@ const App = () => {
     },
     {
       title: 'Status',
-      key: 'status',
       render: (_, record) => (
         <div className='flex flex-row gap-2 w-20 items-center justify-center'>
           {
@@ -142,13 +175,46 @@ const App = () => {
     },
     {
       title: 'Todo',
-      dataIndex: 'todo',
-      key: 'todo',
+      render: (_, record) => (
+        <div className='flex flex-row gap-3 items-center'>
+          {
+            editingTodoId === record.id
+              ?
+              <>
+                <Input defaultValue={record.todo} maxLength={40}  style={{ width: 400 }} onChange={handleChange} />
+                <FontAwesomeIcon className='cursor-pointer text-xl' icon={faCheck} shake onClick={() => handleEdit(record.id, editedNewTodo)} />
+              </>
+              :
+              (
+                record.isCompleted === true
+                  ?
+                  <s>{record.todo}</s>
+                  :
+                  record.todo
+              )
+
+          }
+        </div>
+      ),
     },
     {
       title: 'Created At',
       dataIndex: 'createdAt',
-      key: 'createdAt',
+    },
+    {
+      render: (_, record) => (
+        <div className='flex flex-row gap-3 w-20 items-center justify-center'>
+          {
+            editingTodoId
+              ?
+              <EditOutlined className='text-xl opacity-15' />
+              :
+              <EditOutlined className='cursor-pointer text-xl ' onClick={() => handleStartEdit(record.id)} />
+          }
+
+          <DeleteOutlined className='cursor-pointer text-xl text-red-600' onClick={() => handleDelete(record.id)} />
+        </div>
+      ),
     },
   ];
 
