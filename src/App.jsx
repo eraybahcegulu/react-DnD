@@ -1,4 +1,4 @@
-import { Button, Input, Form, Table, Spin } from 'antd';
+import { Button, Input, Form, Table, Spin, Tag } from 'antd';
 import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
@@ -90,10 +90,20 @@ const App = () => {
           {
             record.isCompleted === true
               ?
-              <span> Completed </span>
+              <Tag color="green"> Completed </Tag>
               :
               <>
-                {record.status}
+                {
+                  record.status === status.INPROGRESS
+                  &&
+                  <Tag color="orange"> {record.status} </Tag>
+                }
+
+                {
+                  record.status === status.FOCUSED
+                  &&
+                  <Tag color="red"> {record.status} </Tag>
+                }
               </>
           }
         </div>
