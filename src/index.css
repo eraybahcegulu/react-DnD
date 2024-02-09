@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.ant-btn,
+.ant-input,
+.ant-card,
+.ant-modal,
+.ant-select,
+.ant-table-container,
+.ant-message-notice,
+.ant-notification-notice,
+.ant-form,
+.ant-form-item-required,
+.ant-alert,
+.ant-result,
+.ant-badge,
+.ant-radio-button-wrapper,
+.ant-popover,
+.ant-steps-item-title,
+.ant-steps-item-description,
+.ant-carousel,
+.ant-form-item-explain-error {
+  font-family: 'Electrolize', sans-serif;
+}
+
+body {
+  background-color: rgb(81, 81, 121);
+  margin: 0;
+  font-family: 'Electrolize', sans-serif;
+}
+
+.ant-btn-primary {
+  background-color: #1677ff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.ant-switch:hover {
+  border: solid 1px rgb(43, 122, 241);
+  scale: 1.2;
+}
+
+.ant-switch {
+  background: gray;
+  border: solid 1px rgb(43, 122, 241);
+}
