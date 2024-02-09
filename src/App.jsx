@@ -1,4 +1,4 @@
-import { Button, Input, Form, Table, Spin, Tag } from 'antd';
+import { Button, Input, Form, Table, Spin, Tag, Alert } from 'antd';
 import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquare, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
+import { faArrowsToDot } from '@fortawesome/free-solid-svg-icons';
 
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addTodoForm] = Form.useForm();
 
   useEffect(() => {
     setTimeout(() => {
@@ -30,10 +32,11 @@ const App = () => {
     };
 
 
-    const updatedTodos = [...todos, newTodo];
+    const updatedTodos = [newTodo, ...todos];
     localStorage.setItem('todos', JSON.stringify(updatedTodos));
 
     setTodos(updatedTodos);
+    addTodoForm.resetFields();
   };
 
   const setCompleted = async (id) => {
@@ -59,6 +62,28 @@ const App = () => {
     localStorage.setItem('todos', JSON.stringify(updatedTodos));
   };
 
+  const setFocused = async (id) => {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        return { ...todo, status: status.FOCUSED };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
+  };
+
+  const setInProgress = async (id) => {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        return { ...todo, status: status.INPROGRESS };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
+  };
+
   const columns = [
     {
       render: (_, record) => (
@@ -77,7 +102,13 @@ const App = () => {
 
           {
             (record.status === status.INPROGRESS && record.isCompleted === false) &&
-            <LoadingOutlined className='cursor-pointer text-xl' />
+            <LoadingOutlined className='cursor-pointer text-xl text-orange-600' onClick={() => setFocused(record.id)} />
+          }
+
+          {
+            (record.status === status.FOCUSED && record.isCompleted === false) &&
+
+            <FontAwesomeIcon className='cursor-pointer text-xl text-red-600' icon={faArrowsToDot} onClick={() => setInProgress(record.id)} />
           }
         </div>
       ),
@@ -86,7 +117,7 @@ const App = () => {
       title: 'Status',
       key: 'status',
       render: (_, record) => (
-        <div className='flex flex-row gap-2 w-20'>
+        <div className='flex flex-row gap-2 w-20 items-center justify-center'>
           {
             record.isCompleted === true
               ?
@@ -126,6 +157,7 @@ const App = () => {
       <Form
         onFinish={onFinishAddTodo}
         className='flex flex-row gap-2 justify-center items-center mt-20'
+        form={addTodoForm}
       >
         <Form.Item
           name="todo"
@@ -149,7 +181,13 @@ const App = () => {
           ?
           <Spin size="large" />
           :
-          <Table rowKey="id" className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]" dataSource={todos} columns={columns} />
+          (
+            (!loading && todos.length === 0)
+              ?
+              <Alert message="Todo not found" type="warning" />
+              :
+              <Table rowKey="id" className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]" dataSource={todos} columns={columns} />
+          )
       }
 
     </div>
