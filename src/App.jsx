@@ -1,4 +1,3 @@
-
 import { Button, Input, Form, Table, Spin, Tag, Alert } from 'antd';
 import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
@@ -35,12 +34,7 @@ const App = () => {
     const style = {
       // eslint-disable-next-line react/prop-types
       ...props.style,
-      transform: CSS.Transform.toString(
-        transform && {
-          ...transform,
-          scaleY: 1,
-        },
-      ),
+      transform: CSS.Transform.toString(transform),
       transition,
       cursor: 'grab',
       borderCollapse: 'collapse',
@@ -50,11 +44,14 @@ const App = () => {
           position: 'relative',
           zIndex: 9999,
           boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.5)',
+          borderRadius: '8px',
         }
         : {}),
     };
 
-    return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
+    return (
+      <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />
+    );
   };
 
   const sensors = useSensors(
@@ -177,7 +174,9 @@ const App = () => {
 
   const handleChange = (event) => {
     setEditedNewTodo(event.target.value);
+    console.log(editedNewTodo)
   };
+
 
   const columns = [
     {
@@ -313,17 +312,29 @@ const App = () => {
               ?
               <Alert message="Todo not found" type="warning" />
               :
-              <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-                <SortableContext items={todos.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              (
+                editingTodoId
+                  ?
                   <Table
                     rowKey="id"
                     className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]"
                     dataSource={todos}
                     columns={columns}
-                    components={{ body: { row: Row, }, }}
                   />
-                </SortableContext>
-              </DndContext>
+                  :
+                  <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+                    <SortableContext items={todos.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                      <Table
+                        rowKey="id"
+                        className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]"
+                        dataSource={todos}
+                        columns={columns}
+                        components={{ body: { row: Row, }, }}
+                      />
+                    </SortableContext>
+                  </DndContext>
+              )
+
           )
       }
 
