@@ -1,9 +1,9 @@
-import { Button, Input, Form, Table, Spin, Tag, Alert } from 'antd';
+import { Button, Input, Form, Table, Spin, Tag, Alert, Popover } from 'antd';
 import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
 import { useEffect, useState } from 'react';
-import { DeleteOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquare, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import { faArrowsToDot, faCheck } from '@fortawesome/free-solid-svg-icons';
@@ -102,7 +102,7 @@ const App = () => {
   const setCompleted = async (id) => {
     const updatedTodos = todos.map(todo => {
       if (todo.id === id) {
-        return { ...todo, isCompleted: true };
+        return { ...todo, isCompleted: true, completedAt: dateNow() };
       }
       return todo;
     });
@@ -114,13 +114,16 @@ const App = () => {
   const setNotCompleted = async (id) => {
     const updatedTodos = todos.map(todo => {
       if (todo.id === id) {
-        return { ...todo, isCompleted: false };
+        // eslint-disable-next-line no-unused-vars
+        const { completedAt, ...rest } = todo;
+        return { ...rest, isCompleted: false };
       }
       return todo;
     });
     setTodos(updatedTodos);
     localStorage.setItem('todos', JSON.stringify(updatedTodos));
   };
+
 
   const setFocused = async (id) => {
     const updatedTodos = todos.map(todo => {
@@ -214,7 +217,15 @@ const App = () => {
           {
             record.isCompleted === true
               ?
-              <Tag color="green"> Completed </Tag>
+
+
+                <Tag color="green"> Completed
+                  <Popover placement="bottom" content={record.completedAt} trigger="hover">
+                    <InfoCircleOutlined className='ml-1' />
+                  </Popover>
+                </Tag>
+
+
               :
               <>
                 {
