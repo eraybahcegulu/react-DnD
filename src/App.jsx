@@ -1,12 +1,23 @@
+
 import { Button, Input, Form, Table, Spin, Tag, Alert } from 'antd';
 import { dateNow } from './utils/moment'
 import { id } from './utils/uuid'
 import { status } from './utils/status'
 import { useEffect, useState } from 'react';
-import { DeleteOutlined, DragOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquare, faSquareCheck } from '@fortawesome/free-regular-svg-icons';
 import { faArrowsToDot, faCheck } from '@fortawesome/free-solid-svg-icons';
+
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const App = () => {
   const [todos, setTodos] = useState([]);
@@ -14,6 +25,57 @@ const App = () => {
   const [editingTodoId, setEditingTodoId] = useState(null);
   const [addTodoForm] = Form.useForm();
   const [editedNewTodo, setEditedNewTodo] = useState(null);
+
+  const Row = (props) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+      // eslint-disable-next-line react/prop-types
+      id: props['data-row-key'],
+    });
+
+    const style = {
+      // eslint-disable-next-line react/prop-types
+      ...props.style,
+      transform: CSS.Transform.toString(
+        transform && {
+          ...transform,
+          scaleY: 1,
+        },
+      ),
+      transition,
+      cursor: 'grab',
+      borderCollapse: 'collapse',
+      ...(isDragging
+        ? {
+          cursor: 'grabbing',
+          position: 'relative',
+          zIndex: 9999,
+          boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.5)',
+        }
+        : {}),
+    };
+
+    return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    }),
+  );
+
+  const onDragEnd = ({ active, over }) => {
+    if (active.id !== over?.id) {
+      setTodos((prev) => {
+        const activeIndex = prev.findIndex((i) => i.id === active.id);
+        const overIndex = prev.findIndex((i) => i.id === over?.id);
+        const updatedTodos = arrayMove(prev, activeIndex, overIndex);
+        localStorage.setItem('todos', JSON.stringify(updatedTodos));
+        return updatedTodos;
+      });
+    }
+  };
 
   useEffect(() => {
     setTimeout(() => {
@@ -32,7 +94,6 @@ const App = () => {
       isCompleted: false,
       ...values
     };
-
 
     const updatedTodos = [newTodo, ...todos];
     localStorage.setItem('todos', JSON.stringify(updatedTodos));
@@ -216,15 +277,6 @@ const App = () => {
         </div>
       ),
     },
-
-    {
-      title: 'Drag Drop',
-      render: () => (
-        <div className='flex flex-row  w-auto items-center justify-center'>
-          <DragOutlined className='text-xl text-blue-600 cursor-grabbing'/>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -261,7 +313,17 @@ const App = () => {
               ?
               <Alert message="Todo not found" type="warning" />
               :
-              <Table rowKey="id" className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]" dataSource={todos} columns={columns} />
+              <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+                <SortableContext items={todos.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                  <Table
+                    rowKey="id"
+                    className="mt-4 max-w-[475px] md:max-w-[750px] xl:max-w-[1200px]"
+                    dataSource={todos}
+                    columns={columns}
+                    components={{ body: { row: Row, }, }}
+                  />
+                </SortableContext>
+              </DndContext>
           )
       }
 
